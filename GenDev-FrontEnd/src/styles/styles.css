@@ -53,3 +53,27 @@
   button:hover {
     background-color: #0056b3;
   }
+  .header-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+  }
+  
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sub-content {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 5px;
+  }
+  
+  /* Entferne den Rand für das letzte Element */
+  .header-item:last-child {
+    border-right: none;
+  }
