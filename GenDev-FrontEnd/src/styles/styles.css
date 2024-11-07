@@ -1,0 +1,55 @@
+/* ComparisonTable.css */
+
+.comparison-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #ddd;
+  }
+  
+  .header, .footer {
+    display: flex;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .header-item, .footer-item, .row-header, .row-item {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-right: 1px solid #ddd;
+  }
+  
+  .header-item:last-child, .footer-item:last-child, .row-item:last-child {
+    border-right: none;
+  }
+  
+  .row {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .row-header {
+    background-color: #fff;
+  }
+  
+  .checkmark {
+    color: green;
+  }
+  
+  .cross {
+    color: red;
+  }
+  
+  button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
