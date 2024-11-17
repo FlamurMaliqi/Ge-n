@@ -1,24 +1,28 @@
 #quick-access {
     width: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column; /* Kann auch row sein, wenn du horizontal zentrieren möchtest */
+    justify-content: center; /* Vertikale Zentrierung */
+    align-items: center; /* Horizontale Zentrierung */
 }
 
+
 #quick-access-form {
-    display: grid;
-    grid-template-columns: 3fr 3fr 1fr 2fr 1fr 2fr;
-    gap: 1rem;
+    display: flex; /* Flexbox für das Formular */
+    flex-direction: row; /* Elemente horizontal nebeneinander */
+    align-items: center; /* Vertikal zentrieren */
+    justify-content: space-between; /* Abstand zwischen den Elementen */
     padding: 1.5rem 2rem;
+    width: 400px;
     height: auto;
-    width: 100%;
     border-radius: var(--border-radius);
     background-color: var(--background-color);
     box-shadow: var(--shadow-dark);
     z-index: 50;
     transform: translateY(-50%);
 }
+
+
 
 #time {
     width: auto;

@@ -67,9 +67,9 @@
         max-width: 100%;
     }
 
-    #header-image {
-        width: 100%;
-        height: auto;
-        margin-top: -12.5vh;
+    .header-image {
+        width: 100px; 
+        height: auto; 
     }
+
 }
