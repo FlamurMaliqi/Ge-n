@@ -1,44 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import '../styles/header.css';
 
 function Header() {
-  return (
-    <header style={styles.header}>
-      <h1 style ={styles.h1}>Streaming Package Comparison</h1>
-      <nav>
-        <ul style={styles.navList}>
-          <li><Link to="/" style={styles.link}>Home</Link></li>
-          <li><Link to="/team-selection" style={styles.link}>Team Selection</Link></li>
-          <li><Link to="/about" style={styles.link}>About</Link></li>
-        </ul>
-      </nav>
-    </header>
-  );
+    return (
+        <section id="header-wrapper" className="margin-bottom-0">
+            <div id="header" className="max-width-1800px">
+                <div id="uvp">
+                    <h1>Finden Sie die besten Streaming-Pakete für Ihre Lieblingsmannschaften</h1>
+                    <h2>Check24 Streaming Package Comparison – Vergleichen Sie Angebote für Bundesliga und Champions League</h2>
+                    <h3>Wählen Sie Ihr Team und finden Sie die optimalen Streaming-Pakete, um jedes Spiel live zu verfolgen. 
+                        Berechnen Sie die beste Kombination von Paketen, um Kosten zu sparen und alle Spiele zu sehen.</h3>
+                </div>
+            </div>
+        </section>
+    );
 }
-
-const styles = {
-  h1: {
-    color: "#fff"
-  },
-  header: {
-    backgroundColor: '#3a3a3a',
-    color: '#fff',
-    padding: '10px 20px',
-    textAlign: 'center',
-  },
-  navList: {
-    listStyleType: 'none',
-    padding: 0,
-    display: 'flex',          // Add flex display
-    justifyContent: 'center',  // Center the list items
-    alignItems: 'center',      // Center vertically
-    margin: 0,
-  },
-  link: {
-    color: '#fff',
-    margin: '0 15px',
-    textDecoration: 'none',
-  }
-};
 
 export default Header;
