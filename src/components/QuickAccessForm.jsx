@@ -1,90 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import '../css/quick-access-form.css';
+import FormInput from "./FormInput";
+import "../css/quick-access-form.css";
 
 function QuickAccessForm() {
-    const [teams, setTeams] = useState([]);
-    const [selectedTeam, setSelectedTeam] = useState('');
-    const [teamSuggestions, setTeamSuggestions] = useState([]);
-    const [inputValue, setInputValue] = useState('');
+    const [teamValue, setTeamValue] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false); // To control when to show suggestions
 
-    const minInputLength = 3;
-
-    // API-Aufruf, um die Liste der Teams zu bekommen
     useEffect(() => {
-        fetch('http://localhost:8080/api/streaming/teams')
-            .then((response) => response.json())
-            .then((data) => {
-                setTeams(data);
-                setSelectedTeam(data[0] || '');
-            })
-            .catch((error) => {
-                console.error('Error fetching teams:', error);
-            });
+        const fetchSuggestions = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/api/streaming/teams");
+                if (response.ok) {
+                    const data = await response.json();
+                    setSuggestions(data);
+                } else {
+                    console.error("Failed to fetch suggestions");
+                }
+            } catch (error) {
+                console.error("Error fetching suggestions:", error);
+            }
+        };
+
+        fetchSuggestions();
     }, []);
 
-    // Event-Handler für die Eingabe des Teamnamens
     const handleInputChange = (e) => {
         const input = e.target.value;
-        setInputValue(input);
+        setTeamValue(input);
 
-        if (input.length >= minInputLength) {
-            // Filtere die Teams basierend auf der Eingabe
-            const filteredTeams = teams.filter((team) =>
+        // Show suggestions only if the input length is greater than or equal to 3
+        if (input.length >= 3) {
+            setShowSuggestions(true);
+            const filtered = suggestions.filter((team) =>
                 team.toLowerCase().includes(input.toLowerCase())
             );
-            setTeamSuggestions(filteredTeams);
+            setFilteredSuggestions(filtered);
         } else {
-            setTeamSuggestions([]);
+            setShowSuggestions(false);
+            setFilteredSuggestions([]);
         }
     };
 
-    // Event-Handler für das Auswählen eines Teams aus den Vorschlägen
-    const handleSuggestionClick = (team) => {
-        setInputValue(team);
-        setSelectedTeam(team);
-        setTeamSuggestions([]);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log("Input submitted:", teamValue);
     };
 
-    // Event-Handler für das Auswahländerung des Teams
-    const handleSelectChange = (e) => {
-        setSelectedTeam(e.target.value);
+    const handleSuggestionClick = (teamName) => {
+        setTeamValue(teamName);
+        setShowSuggestions(false); // Hide suggestions after a selection
     };
 
     return (
         <div id="quick-access">
-            <form id="quick-access-form">
-                <div className="form-input-wrapper">
-                    <label htmlFor="team">Team</label>
-                    <input
-                        type="text"
-                        id="team"
-                        name="team"
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        className="form-input"
-                        placeholder="Team auswählen"
-                    />
-                    {teamSuggestions.length > 0 && (
-                        <ul className="suggestions-list">
-                            {teamSuggestions.map((team, index) => (
-                                <li
-                                    key={index}
-                                    className="suggestion-item"
-                                    onClick={() => handleSuggestionClick(team)}
-                                >
-                                    {team}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
-                <input
-                    type="submit"
-                    value="Package suchen"
-                    className="submit button"
-                    disabled={!selectedTeam} // Button nur aktiv, wenn ein Team ausgewählt wurde
+            <form id="quick-access-form" onSubmit={handleSubmit}>
+                <FormInput
+                    label="Team"
+                    type="text"
+                    name="teamValue"
+                    id="teamValue"
+                    placeholder="Team suchen"
+                    value={teamValue}
+                    onChange={handleInputChange}
+                    required={true}
+                    suggestions={filteredSuggestions}
+                    showSuggestions={showSuggestions}
+                    onSuggestionClick={handleSuggestionClick}
                 />
+                <input type="submit" value="Package suchen" className="submit button" />
             </form>
         </div>
     );

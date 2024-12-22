@@ -1,18 +1,19 @@
 import React from 'react';
 
 const FormInput = ({
-                       label,
-                       type,
-                       name,
-                       value,
-                       onChange,
-                       placeholder,
-                       required = false,
-                       id,
-                       className = "form-input",
-                       suggestions = [],
-                       onSuggestionClick = () => {}
-                   }) => {
+    label,
+    type,
+    name,
+    value,
+    onChange,
+    placeholder,
+    required = false,
+    id,
+    className = "form-input",
+    suggestions = [],
+    showSuggestions = false, // showSuggestions als prop
+    onSuggestionClick = () => {}
+}) => {
     return (
         <div className="form-input-wrapper">
             <label>
@@ -28,7 +29,7 @@ const FormInput = ({
                     required={required}
                 />
             </label>
-            {suggestions.length > 0 && (
+            {showSuggestions && suggestions.length > 0 && ( // Zeigt Vorschläge nur an, wenn showSuggestions true ist
                 <div className="form-input-suggestions">
                     <ul>
                         {suggestions.map((suggestion, index) => (
