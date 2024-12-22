@@ -114,11 +114,7 @@ button, .button {
     transition: none;
 }
 
-button:hover, .button:hover {
-    transition: none;
-    background-color: var(--button-primary-hover);
-    border-color: var(--button-primary-hover);
-}
+
 
 .button-secondary {
     background-color: transparent;
