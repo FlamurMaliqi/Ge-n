@@ -1,5 +1,6 @@
 import React from 'react';
 import '../css/header.css';
+import HeaderImage from "../images/HeaderImage.png"
 
 function Header() {
     return (
@@ -13,6 +14,9 @@ function Header() {
                         erstelle die optimale Kombination für Bundesliga- und Champions-League-Matches.
                     </h3>
                 </div>
+                <img id="header-image"
+                     src={HeaderImage}
+                     alt="Minimalist UI illustration of a school class happily boarding a white german public transport bus in a German city in a flat illustration style on a white background with bright Color scheme, dribbble, flat vector."/>
             </div>
         </section>
     );
