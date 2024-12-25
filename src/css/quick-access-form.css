@@ -21,7 +21,7 @@
     background-color: white;
     border: 1px solid #ccc;
     z-index: 10;
-    top: 100%; /* Positioniert die Liste direkt unter dem Eingabefeld */
+    top: 100%;
 }
 
 .suggestion-item {
