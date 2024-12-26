@@ -11,7 +11,7 @@ const FormInput = ({
     id,
     className = "form-input",
     suggestions = [],
-    showSuggestions = false, // showSuggestions als prop
+    showSuggestions = false, 
     onSuggestionClick = () => {}
 }) => {
     return (
@@ -29,7 +29,7 @@ const FormInput = ({
                     required={required}
                 />
             </label>
-            {showSuggestions && suggestions.length > 0 && ( // Zeigt Vorschläge nur an, wenn showSuggestions true ist
+            {showSuggestions && suggestions.length > 0 && ( 
                 <div className="form-input-suggestions">
                     <ul>
                         {suggestions.map((suggestion, index) => (

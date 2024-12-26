@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import FormInput from "./FormInput";
 import "../css/quick-access-form.css";
 
@@ -8,6 +9,7 @@ function QuickAccessForm() {
     const [filteredSuggestions, setFilteredSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedTeams, setSelectedTeams] = useState([]); // State for selected teams
+    const navigate = useNavigate(); // Hook to navigate to other pages
 
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -17,7 +19,7 @@ function QuickAccessForm() {
                     const data = await response.json();
                     setSuggestions(data);
                 } else {
-                    console.error("Failed to fetch suggestions");
+                    console.error("Error fetching suggestions");
                 }
             } catch (error) {
                 console.error("Error fetching suggestions:", error);
@@ -31,7 +33,6 @@ function QuickAccessForm() {
         const input = e.target.value;
         setTeamValue(input);
 
-        // Show suggestions only if the input length is greater than or equal to 3
         if (input.length >= 3) {
             setShowSuggestions(true);
             const filtered = suggestions.filter((team) =>
@@ -46,9 +47,9 @@ function QuickAccessForm() {
 
     const handleSuggestionClick = (teamName) => {
         if (!selectedTeams.includes(teamName)) {
-            setSelectedTeams([...selectedTeams, teamName]); // Add team to selected list
+            setSelectedTeams([...selectedTeams, teamName]); // Add team to selected teams
         }
-        setTeamValue(""); // Clear input after selection
+        setTeamValue(""); // Clear the input field after selection
         setShowSuggestions(false); // Hide suggestions
     };
 
@@ -56,9 +57,35 @@ function QuickAccessForm() {
         setSelectedTeams(selectedTeams.filter((team) => team !== teamName)); // Remove team from selected list
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Selected teams:", selectedTeams);
+
+        // Check if any teams are selected
+        if (selectedTeams.length === 0) {
+            alert("Please select at least one team");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/api/streaming/packages", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedTeams),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Response data:', data); 
+
+                navigate("/packages", { state: { selectedTeams, data } });
+            } else {
+                console.error("Error fetching packages");
+            }
+        } catch (error) {
+            console.error("Error sending request:", error);
+        }
     };
 
     return (
@@ -69,15 +96,15 @@ function QuickAccessForm() {
                     type="text"
                     name="teamValue"
                     id="teamValue"
-                    placeholder="Team suchen"
+                    placeholder="Search for a team"
                     value={teamValue}
                     onChange={handleInputChange}
-                    required={true}
+                    required={false}
                     suggestions={filteredSuggestions}
                     showSuggestions={showSuggestions}
                     onSuggestionClick={handleSuggestionClick}
                 />
-                <input type="submit" value="Package suchen" className="submit button" />
+                <input type="submit" value="Search Package" className="submit button" />
                 
                 <div className="selected-teams">
                     {selectedTeams.map((team, index) => (
@@ -93,7 +120,6 @@ function QuickAccessForm() {
                         </div>
                     ))}
                 </div>
-                
             </form>
         </div>
     );

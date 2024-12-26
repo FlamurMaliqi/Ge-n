@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import "../css/comparisonTable.css";
 import blackCross from "../images/blackCrossWithCircle.png";
 import greenCropInCircle from "../images/greenCropInCircle.png";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa"; 
 
-const ComparisonTable = () => {
-  const data = [
+const ComparisonTable = ({ data, selectedTeams }) => {
+  const testData = [
     {
       category: "LeLiga",
       MegaSport: true,
@@ -49,6 +50,12 @@ const ComparisonTable = () => {
 
   const services = ["MegaSport", "PrimeVideo", "Premium", "GigaTV", "SmartHD"];
 
+  const [openCategory, setOpenCategory] = useState(null);
+
+  const toggleCategory = (category) => {
+    setOpenCategory((prevCategory) => (prevCategory === category ? null : category));
+  };
+
   return (
     <div id="comparison-table-div">
       <div id="white-box">
@@ -69,30 +76,53 @@ const ComparisonTable = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  <td>{row.category}</td>
-                  {services.map((service, colIndex) => (
-                    <td key={colIndex}>
-                      <div className="status-icons">
-                        <img
-                          src={greenCropInCircle}
-                          alt="Crop"
-                          className={`status-icon crop ${
-                            row[service] ? "" : "hidden"
-                          }`}
-                        />
-                        <img
-                          src={blackCross}
-                          alt="Cross"
-                          className={`status-icon ${
-                            !row[service] ? "" : "hidden"
-                          }`}
-                        />
-                      </div>
+              {testData.map((row, rowIndex) => (
+                <React.Fragment key={rowIndex}>
+                  <tr onClick={() => toggleCategory(row.category)} style={{ cursor: "pointer" }}>
+                    <td>
+                      <span className="category-name">
+                        {row.category}
+                      </span>
+                      <span className="dropdown-icon">
+                        {openCategory === row.category ? <FaChevronUp /> : <FaChevronDown />}
+                      </span>
                     </td>
-                  ))}
-                </tr>
+                    {services.map((service, colIndex) => (
+                      <td key={colIndex}>
+                        <div className="status-icons">
+                          <img
+                            src={greenCropInCircle}
+                            alt="Crop"
+                            className={`status-icon crop ${
+                              row[service] ? "" : "hidden"
+                            }`}
+                          />
+                          <img
+                            src={blackCross}
+                            alt="Cross"
+                            className={`status-icon ${
+                              !row[service] ? "" : "hidden"
+                            }`}
+                          />
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Bedingte Anzeige der zusätzlichen Zeile */}
+                  {openCategory === row.category && (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="additional-info">
+                          <ul>
+                            <li>Additional info for {row.category}</li>
+                            <li>Details about the services and category...</li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

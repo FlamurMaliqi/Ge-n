@@ -6,7 +6,7 @@ function Home() {
     return (
        <React.Fragment>
            <Header></Header>
-               <section className="margin-bottom-10vh">
+               <section className="margin-bottom-10vh home-page-white-box">
                    <QuickAccessForm></QuickAccessForm>
                </section>
        </React.Fragment>

@@ -31,7 +31,7 @@
   gap: 1rem;
   padding: 1.5rem 2rem;
   height: auto;
-  width: 100%;
+  width: 120%;
   border-radius: var(--border-radius);
   background-color: var(--background-color);
   box-shadow: var(--shadow-dark);
@@ -97,6 +97,14 @@ th .status-labels {
   justify-content: center;
   margin-top: 5px;
 }
+.category-name {
+  margin-right: 10px;
+}
+
+.dropdown-icon {
+  font-size: 16px;
+}
+
 
 th .label {
   font-size: 0.8rem;
