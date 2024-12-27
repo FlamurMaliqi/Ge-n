@@ -2,58 +2,72 @@ import React, { useState } from "react";
 import "../css/comparisonTable.css";
 import blackCross from "../images/blackCrossWithCircle.png";
 import greenCropInCircle from "../images/greenCropInCircle.png";
+import lightGreenCropInCircle from "../images/lightGreenCropInCircle.png";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; 
 
 const ComparisonTable = ({ data, selectedTeams }) => {
-  const testData = [
-    {
-      category: "LeLiga",
-      MegaSport: true,
-      PrimeVideo: true,
-      Premium: false,
-      GigaTV: true,
-      SmartHD: true,
-    },
-    {
-      category: "2. BL",
-      MegaSport: true,
-      PrimeVideo: true,
-      Premium: true,
-      GigaTV: true,
-      SmartHD: true,
-    },
-    {
-      category: "DFB-Pokal",
-      MegaSport: true,
-      PrimeVideo: false,
-      Premium: true,
-      GigaTV: true,
-      SmartHD: true,
-    },
-    {
-      category: "Supercup",
-      MegaSport: true,
-      PrimeVideo: true,
-      Premium: true,
-      GigaTV: true,
-      SmartHD: true,
-    },
-    {
-      category: "Premier L.",
-      MegaSport: false,
-      PrimeVideo: false,
-      Premium: false,
-      GigaTV: true,
-      SmartHD: true,
-    },
-  ];
 
-  const services = ["MegaSport", "PrimeVideo", "Premium", "GigaTV", "SmartHD"];
+  // Dynamisch die Services (Package-Namen) aus den Daten extrahieren
+  const getPackageNames = (data) => {
+    const packageNames = new Set();
+  
+    data.forEach((packages) => {
+      packages.forEach((pkg) => {
+        if (pkg.packageName) {
+          packageNames.add(pkg.packageName);
+        }
+      });
+    });
+  
+    return Array.from(packageNames);  // Rückgabe als Array
+  };
 
-  const [openCategory, setOpenCategory] = useState(null);
+  // Dynamisch die Services aus den Daten extrahieren
+  const services = getPackageNames(data);
 
-  const toggleCategory = (category) => {
-    setOpenCategory((prevCategory) => (prevCategory === category ? null : category));
+  const [openTournament, setOpenTournament] = useState(null);
+
+  const toggleTournament = (tournamentName) => {
+    setOpenTournament((prevTournament) => (prevTournament === tournamentName ? null : tournamentName));
+  };
+
+  const getTournamentGamesMap = (data) => {
+    const tournamentMap = new Map();
+
+    data.forEach((packages) => {
+      packages.forEach((pkg) => {
+        pkg.coveredGames.forEach((game) => {
+          const tournamentName = game.tournamentName;
+
+          if (tournamentMap.has(tournamentName)) {
+            const existingGameInfos = tournamentMap.get(tournamentName);
+            tournamentMap.set(tournamentName, [...existingGameInfos, ...game.gameInfos]);
+          } else {
+            tournamentMap.set(tournamentName, game.gameInfos);
+          }
+        });
+      });
+    });
+
+    return tournamentMap;
+  };
+
+  const tournamentMap = getTournamentGamesMap(data);
+
+  // Funktion zur Berechnung des Icons basierend auf den Zuständen der Spiele
+  const getIconForStatus = (games,statusType) => {
+    const allTrue = games.every(game => game?.[statusType] === true);
+    const allFalse = games.every(game => game?.[statusType] === false);
+    const someTrue = games.some(game => game?.[statusType] === true);
+
+    if (allTrue) {
+      return greenCropInCircle;
+    } else if (allFalse) {
+      return blackCross;
+    } else if (someTrue) {
+      return lightGreenCropInCircle;
+    }
+    return blackCross;  // Default fallback
   };
 
   return (
@@ -63,65 +77,77 @@ const ComparisonTable = ({ data, selectedTeams }) => {
           <table>
             <thead>
               <tr>
-                <th>Category</th>
+                <th>Tournament</th>
                 {services.map((service, index) => (
                   <th key={index}>
                     {service}
                     <div className="status-labels">
-                      <div className="label">Live</div>
-                      <div className="label">Highl.</div>
+                      <div className="label">Highl.</div>  {/* Highlight zuerst */}
+                      <div className="label">Live</div>    {/* Live danach */}
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {testData.map((row, rowIndex) => (
-                <React.Fragment key={rowIndex}>
-                  <tr onClick={() => toggleCategory(row.category)} style={{ cursor: "pointer" }}>
+              {/* Wir iterieren über alle Turniere im TournamentMap */}
+              {Array.from(tournamentMap.keys()).map((tournamentName, tournamentIndex) => (
+                <React.Fragment key={tournamentIndex}>
+                  <tr onClick={() => toggleTournament(tournamentName)} style={{ cursor: "pointer" }}>
                     <td>
                       <span className="category-name">
-                        {row.category}
+                        {tournamentName} {/* Turniername als Titel */}
                       </span>
                       <span className="dropdown-icon">
-                        {openCategory === row.category ? <FaChevronUp /> : <FaChevronDown />}
+                        {openTournament === tournamentName ? <FaChevronUp /> : <FaChevronDown />}
                       </span>
                     </td>
                     {services.map((service, colIndex) => (
                       <td key={colIndex}>
                         <div className="status-icons">
+                          {/* Highlight-Status */}
                           <img
-                            src={greenCropInCircle}
-                            alt="Crop"
-                            className={`status-icon crop ${
-                              row[service] ? "" : "hidden"
-                            }`}
+                            src={getIconForStatus(tournamentMap.get(tournamentName),  "highlight")}
+                            alt="Highlight Status"
+                            className="status-icon"
                           />
+                          
+                          {/* Live-Status */}
                           <img
-                            src={blackCross}
-                            alt="Cross"
-                            className={`status-icon ${
-                              !row[service] ? "" : "hidden"
-                            }`}
+                            src={getIconForStatus(tournamentMap.get(tournamentName), "live")}
+                            alt="Live Status"
+                            className="status-icon"
                           />
                         </div>
                       </td>
                     ))}
                   </tr>
 
-                  {/* Bedingte Anzeige der zusätzlichen Zeile */}
-                  {openCategory === row.category && (
-                    <tr>
-                      <td colSpan={6}>
-                        <div className="additional-info">
-                          <ul>
-                            <li>Additional info for {row.category}</li>
-                            <li>Details about the services and category...</li>
-                          </ul>
-                        </div>
-                      </td>
+                  {/* Bedingte Anzeige der Spiele */}
+                  {openTournament === tournamentName && tournamentMap.get(tournamentName).map((game, gameIndex) => (
+                    <tr key={gameIndex}>
+                      <td>{game.teamA} vs {game.teamB}</td> 
+                      {services.map((colIndex) => (
+                        <td key={colIndex}>
+                          <div className="status-icons">
+                            {/* Highlight-Status */}
+                            <img
+                              src={getIconForStatus([game], "highlight")}
+                              alt="Highlight Status"
+                              className="status-icon"
+                            />
+
+                            {/* Live-Status */}
+                            <img
+                              src={getIconForStatus([game],"live")}
+                              alt="Live Status"
+                              className="status-icon"
+                            />
+                          </div>
+                        </td>
+                      ))}
                     </tr>
-                  )}
+                  ))}
                 </React.Fragment>
               ))}
             </tbody>

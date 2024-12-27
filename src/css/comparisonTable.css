@@ -133,3 +133,9 @@ td {
   height: 20px;
 }
 
+/* Container für die Spiele im Dropdown */
+.tournament-games-container {
+  max-height: 300px; /* Höhe anpassen */
+  overflow-y: auto;  /* Scrollbar aktivieren */
+  padding: 10px;     /* Optional für etwas Abstand */
+}
