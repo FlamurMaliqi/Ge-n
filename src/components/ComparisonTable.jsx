@@ -73,6 +73,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
   return (
     <div id="comparison-table-div">
       <div id="white-box">
+        <h2 className="header-table">Beste Packet-Kmbination</h2>
         <div className="comparison-table">
           <table>
             <thead>

@@ -1,5 +1,5 @@
 .comparison-table {
-  margin: 20px auto;
+  margin: auto;
   width: 90%;
   font-family: Arial, sans-serif;
   border-radius: 8px;
@@ -24,6 +24,12 @@
 
 .status-icon.crop {
   margin-right: 8px; 
+}
+
+.header-table {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 #white-box {

@@ -8,9 +8,6 @@ function Header() {
             <div id="header" className="max-width-1800px">
                 <div id="uvp">
                     <h1>CHECK24 GenDev Streaming Package Comparison Challenge</h1>
-                    <h3>
-                        Das sind die besten Kombiniationen.
-                    </h3>
                 </div>
                 <img id="header-image"
                      src={HeaderImage}
