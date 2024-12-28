@@ -102,7 +102,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    max-width: 220px;
+    max-width: 230px;
 }
 
 .selected-team {
@@ -113,15 +113,17 @@
     display: flex;
     align-items: center;
     height: 24px;
-    max-width: 100%;
+    width: 100%;
 }
 
 .remove-team-button {
+    max-width: 50px;
     background: none;
     border: none;
     font-size: 16px;
     cursor: pointer;
     color: #000;
+    margin-left: auto;
 }
 
 @media (max-width: 1300px) and (max-height: 700px) {
