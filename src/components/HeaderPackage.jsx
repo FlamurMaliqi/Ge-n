@@ -4,7 +4,7 @@ import HeaderImage from "../images/HeaderImage.png"
 
 function Header() {
     return (
-        <section id="header-wrapper" className="margin-bottom-0">
+        <section id="header-wrapper" className="package-header">
             <div id="header" className="max-width-1800px">
                 <div id="uvp">
                     <h1>CHECK24 GenDev Streaming Package Comparison Challenge</h1>

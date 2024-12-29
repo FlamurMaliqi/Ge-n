@@ -63,12 +63,13 @@ const ComparisonTable = ({ data, selectedTeams }) => {
         pkg.coveredGames.forEach((game) => {
           const tournamentName = game.tournamentName;
 
-          if (tournamentMap.has(tournamentName)) {
-            const existingGameInfos = tournamentMap.get(tournamentName);
-            tournamentMap.set(tournamentName, [...existingGameInfos, ...game.gameInfos]);
-          } else {
-            tournamentMap.set(tournamentName, game.gameInfos);
+          if (!tournamentMap.has(tournamentName)) {
+            tournamentMap.set(tournamentName, {});
           }
+
+          const tournamentPackages = tournamentMap.get(tournamentName);
+          tournamentPackages[pkg.packageName] = game.gameInfos;
+          tournamentMap.set(tournamentName, tournamentPackages);
         });
       });
     });
@@ -78,7 +79,8 @@ const ComparisonTable = ({ data, selectedTeams }) => {
 
   const tournamentMap = getTournamentGamesMap(data);
 
-  // Funktion zur Berechnung des Icons basierend auf den Zuständen der Spiele
+  console.log(tournamentMap);
+
   const getIconForStatus = (games, statusType) => {
     const allTrue = games.every((game) => game?.[statusType] === true);
     const allFalse = games.every((game) => game?.[statusType] === false);
@@ -91,10 +93,9 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     } else if (someTrue) {
       return lightGreenCropInCircle;
     }
-    return blackCross; // Default fallback
+    return blackCross;
   };
 
-  // Gesamtsumme der monatlichen Preise berechnen
   const totalMonthlyPrice = Object.values(prices).reduce((total, price) => {
     if (typeof price === "number") {
       return total + price;
@@ -115,93 +116,132 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                   <th key={index}>
                     {service}
                     <div className="status-labels">
-                      <div className="label">Highl.</div> {/* Highlight zuerst */}
-                      <div className="label">Live</div> {/* Live danach */}
+                      <div className="label">Highl.</div>
+                      <div className="label">Live</div>
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {/* Wir iterieren über alle Turniere im TournamentMap */}
-              {Array.from(tournamentMap.keys()).map((tournamentName, tournamentIndex) => (
-                <React.Fragment key={tournamentIndex}>
-                  <tr
-                    onClick={() => toggleTournament(tournamentName)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td>
-                      <span className="category-name">
-                        {tournamentName} {/* Turniername als Titel */}
-                      </span>
-                      <span className="dropdown-icon">
-                        {openTournament === tournamentName ? <FaChevronUp /> : <FaChevronDown />}
-                      </span>
-                    </td>
-                    {services.map((service, colIndex) => (
-                      <td key={colIndex}>
-                        <div className="status-icons">
-                          {/* Highlight-Status */}
-                          <img
-                            src={getIconForStatus(
-                              tournamentMap.get(tournamentName),
-                              "highlight"
-                            )}
-                            alt="Highlight Status"
-                            className="status-icon"
-                          />
-
-                          {/* Live-Status */}
-                          <img
-                            src={getIconForStatus(
-                              tournamentMap.get(tournamentName),
-                              "live"
-                            )}
-                            alt="Live Status"
-                            className="status-icon"
-                          />
-                        </div>
+              {Array.from(tournamentMap.keys()).map(
+                (tournamentName, tournamentIndex) => (
+                  <React.Fragment key={tournamentIndex}>
+                    <tr
+                      onClick={() => toggleTournament(tournamentName)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td>
+                        <span className="category-name">{tournamentName}</span>
+                        <span className="dropdown-icon">
+                          {openTournament === tournamentName ? (
+                            <FaChevronUp />
+                          ) : (
+                            <FaChevronDown />
+                          )}
+                        </span>
                       </td>
-                    ))}
-                  </tr>
-
-                  {/* Bedingte Anzeige der Spiele */}
-                  {openTournament === tournamentName &&
-                    tournamentMap.get(tournamentName).map((game, gameIndex) => (
-                      <tr key={gameIndex}>
-                        <td>
-                          {game.teamA} vs {game.teamB}
+                      {services.map((service) => (
+                        <td key={service}>
+                          <div className="status-icons">
+                            {tournamentMap.get(tournamentName)?.[service] ? (
+                              <>
+                                <img
+                                  src={getIconForStatus(
+                                    tournamentMap.get(tournamentName)[service],
+                                    "highlight"
+                                  )}
+                                  alt="Highlight Status"
+                                  className="status-icon"
+                                />
+                                <img
+                                  src={getIconForStatus(
+                                    tournamentMap.get(tournamentName)[service],
+                                    "live"
+                                  )}
+                                  alt="Live Status"
+                                  className="status-icon"
+                                />
+                              </>
+                            ) : (
+                              <div>
+                                <img
+                                  src={blackCross}
+                                  alt="No Coverage"
+                                  className="status-icon"
+                                />
+                                <img
+                                  src={blackCross}
+                                  alt="No Coverage"
+                                  className="status-icon"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </td>
-                        {services.map((colIndex) => (
-                          <td key={colIndex}>
-                            <div className="status-icons">
-                              {/* Highlight-Status */}
-                              <img
-                                src={getIconForStatus([game], "highlight")}
-                                alt="Highlight Status"
-                                className="status-icon"
-                              />
+                      ))}
+                    </tr>
+                    {openTournament === tournamentName &&
+                      services.map((service) =>
+                        tournamentMap
+                          .get(tournamentName)
+                          ?.[service]?.map((game, gameIndex) => (
+                            <tr key={`${service}-${gameIndex}`}>
+                              <td>
+                                {game.teamA} vs {game.teamB}
+                              </td>
+                              {services.map((colIndex) => (
+                                <td key={`${colIndex}-${gameIndex}`}>
+                                  <div className="status-icons">
+                                    {tournamentMap.get(tournamentName)?.[
+                                      colIndex
+                                    ] ? (
+                                      <>
+                                        <img
+                                          src={getIconForStatus(
+                                            [game],
+                                            "highlight"
+                                          )}
+                                          alt="Highlight Status"
+                                          className="status-icon"
+                                        />
+                                        <img
+                                          src={getIconForStatus([game], "live")}
+                                          alt="Live Status"
+                                          className="status-icon"
+                                        />
+                                      </>
+                                    ) : (
+                                      <div>
+                                        <img
+                                          src={blackCross}
+                                          alt="No Coverage"
+                                          className="status-icon"
+                                        />
+                                        <img
+                                          src={blackCross}
+                                          alt="No Coverage"
+                                          className="status-icon"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          ))
+                      )}
+                  </React.Fragment>
+                )
+              )}
 
-                              {/* Live-Status */}
-                              <img
-                                src={getIconForStatus([game], "live")}
-                                alt="Live Status"
-                                className="status-icon"
-                              />
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                </React.Fragment>
-              ))}
-
-              {/* Preiszeile */}
               <tr>
                 <td>Preis (monatlich)</td>
                 {services.map((service, index) => (
                   <td key={index} className="price-cell">
-                    {prices[service] ? `${prices[service].toFixed(2)} € (monatlich)` : "N/A"}
+                    {prices[service]
+                      ? `${prices[service].toFixed(2)} € (monatlich)`
+                      : "N/A"}
                   </td>
                 ))}
               </tr>
@@ -209,9 +249,10 @@ const ComparisonTable = ({ data, selectedTeams }) => {
           </table>
         </div>
 
-        {/* Gesamter Preis außerhalb der Tabelle anzeigen */}
         <div className="total-price">
-          <strong>Gesamter Preis (monatlich): {totalMonthlyPrice.toFixed(2)} €</strong>
+          <strong>
+            Gesamter Preis (monatlich): {totalMonthlyPrice.toFixed(2)} €
+          </strong>
         </div>
       </div>
     </div>
