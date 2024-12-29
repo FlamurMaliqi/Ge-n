@@ -26,6 +26,26 @@
   vertical-align: middle;
 }
 
+.pagination-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px; 
+  border: none;
+}
+
+.pagination-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem; 
+  cursor: pointer;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
 .status-icon.crop {
   margin-right: 8px; 
 }
