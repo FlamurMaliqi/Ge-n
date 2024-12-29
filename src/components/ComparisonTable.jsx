@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../css/comparisonTable.css";
+import "../css/comparison-table.css";
 import blackCross from "../images/blackCrossWithCircle.png";
 import greenCropInCircle from "../images/greenCropInCircle.png";
 import lightGreenCropInCircle from "../images/lightGreenCropInCircle.png";
@@ -48,6 +48,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
   const prices = getPrices(data);
 
   const [openTournament, setOpenTournament] = useState(null);
+  const [page, setPage] = useState(0); // für das Seitenmanagement der Spiele
 
   const toggleTournament = (tournamentName) => {
     setOpenTournament((prevTournament) =>
@@ -102,6 +103,13 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     }
     return total;
   }, 0);
+
+  // Funktion zum Berechnen der angezeigten Spiele basierend auf der Seite
+  const getGamesToDisplay = (games) => {
+    const startIndex = page * 5;
+    const endIndex = startIndex + 5;
+    return games.slice(startIndex, endIndex);
+  };
 
   return (
     <div id="comparison-table-div">
@@ -182,54 +190,94 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                       ))}
                     </tr>
                     {openTournament === tournamentName &&
-                      services.map((service) =>
-                        tournamentMap
-                          .get(tournamentName)
-                          ?.[service]?.map((game, gameIndex) => (
-                            <tr key={`${service}-${gameIndex}`}>
-                              <td>
-                                {game.teamA} vs {game.teamB}
-                              </td>
-                              {services.map((colIndex) => (
-                                <td key={`${colIndex}-${gameIndex}`}>
-                                  <div className="status-icons">
-                                    {tournamentMap.get(tournamentName)?.[
-                                      colIndex
-                                    ] ? (
-                                      <>
-                                        <img
-                                          src={getIconForStatus(
-                                            [game],
-                                            "highlight"
-                                          )}
-                                          alt="Highlight Status"
-                                          className="status-icon"
-                                        />
-                                        <img
-                                          src={getIconForStatus([game], "live")}
-                                          alt="Live Status"
-                                          className="status-icon"
-                                        />
-                                      </>
-                                    ) : (
-                                      <div>
-                                        <img
-                                          src={blackCross}
-                                          alt="No Coverage"
-                                          className="status-icon"
-                                        />
-                                        <img
-                                          src={blackCross}
-                                          alt="No Coverage"
-                                          className="status-icon"
-                                        />
+                      services.map(
+                        (service) =>
+                          tournamentMap.get(tournamentName)?.[service]?.length >
+                            0 && (
+                            <>
+                              {getGamesToDisplay(
+                                tournamentMap.get(tournamentName)[service]
+                              ).map((game, gameIndex) => (
+                                <tr key={`${service}-${gameIndex}`}>
+                                  <td>
+                                    {game.teamA} vs {game.teamB}
+                                  </td>
+                                  {services.map((colIndex) => (
+                                    <td key={`${colIndex}-${gameIndex}`}>
+                                      <div className="status-icons">
+                                        {tournamentMap.get(tournamentName)?.[
+                                          colIndex
+                                        ] ? (
+                                          <>
+                                            <img
+                                              src={getIconForStatus(
+                                                [game],
+                                                "highlight"
+                                              )}
+                                              alt="Highlight Status"
+                                              className="status-icon"
+                                            />
+                                            <img
+                                              src={getIconForStatus(
+                                                [game],
+                                                "live"
+                                              )}
+                                              alt="Live Status"
+                                              className="status-icon"
+                                            />
+                                          </>
+                                        ) : (
+                                          <div>
+                                            <img
+                                              src={blackCross}
+                                              alt="No Coverage"
+                                              className="status-icon"
+                                            />
+                                            <img
+                                              src={blackCross}
+                                              alt="No Coverage"
+                                              className="status-icon"
+                                            />
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                  </div>
-                                </td>
+                                    </td>
+                                  ))}
+                                </tr>
                               ))}
-                            </tr>
-                          ))
+                              {tournamentMap
+                                .get(tournamentName)
+                                ?.hasOwnProperty(service) &&
+                                tournamentMap.get(tournamentName)[service]
+                                  ?.length > 5 && (
+                                  <tr>
+                                    <td colSpan={services.length + 1}>
+                                      <div className="pagination-buttons">
+                                        <button
+                                          onClick={() => setPage(page - 1)}
+                                          disabled={page === 0}
+                                          className="pagination-button"
+                                        >
+                                          <FaChevronUp />
+                                        </button>
+                                        <button
+                                          className="pagination-button"
+                                          onClick={() => setPage(page + 1)}
+                                          disabled={
+                                            tournamentMap.get(tournamentName)[
+                                              service
+                                            ]?.length <=
+                                            (page + 1) * 5
+                                          }
+                                        >
+                                          <FaChevronDown />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                            </>
+                          )
                       )}
                   </React.Fragment>
                 )
@@ -251,7 +299,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
 
         <div className="total-price">
           <strong>
-            Gesamter Preis (monatlich): {totalMonthlyPrice.toFixed(2)} €
+            Gesamter Preis: {totalMonthlyPrice.toFixed(2)} € (monatlich)
           </strong>
         </div>
       </div>

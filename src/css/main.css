@@ -97,7 +97,7 @@ textarea {
     max-height: 5rem;
 }
 
-button, .button {
+.button {
     background-color: var(--button-primary);
     color: var(--button-text);
     border-radius: var(--border-radius);
