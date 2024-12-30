@@ -6,28 +6,32 @@ import lightGreenCropInCircle from "../images/lightGreenCropInCircle.png";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const ComparisonTable = ({ data, selectedTeams }) => {
-  // Dynamisch die Services (Package-Namen) aus den Daten extrahieren
   const removeDuplicateGames = (data) => {
     const seenGames = new Set();
   
-    return data.map((packages) =>
-      packages.map((pkg) => {
-        const uniqueGames = pkg.coveredGames.filter((game) => {
-          const gameIdentifier = `${game.teamA}-${game.teamB}-${game.tournamentName}`;
-          if (seenGames.has(gameIdentifier)) {
-            return false;
-          }
-          seenGames.add(gameIdentifier);
-          return true;
-        });
+    return data
+      .map((packages) =>
+        packages
+          .map((pkg) => {
+            const uniqueGames = pkg.coveredGames.filter((game) => {
+              const gameIdentifier = `${game.teamA}-${game.teamB}-${game.tournamentName}`;
+              if (seenGames.has(gameIdentifier)) {
+                return false;
+              }
+              seenGames.add(gameIdentifier);
+              return true;
+            });
   
-        return {
-          ...pkg,
-          coveredGames: uniqueGames,
-        };
-      })
-    );
+            // Package nur behalten, wenn es noch Spiele enthält
+            return uniqueGames.length > 0
+              ? { ...pkg, coveredGames: uniqueGames }
+              : null; // Wenn kein Spiel mehr übrig ist, wird das Package entfernt
+          })
+          .filter((pkg) => pkg !== null) // Entfernt Packages, die keine Spiele mehr enthalten
+      )
+      .filter((packages) => packages.length > 0); // Entfernt leere Package-Arrays
   };
+   
   const getPackageNames = (data) => {
     const packageNames = new Set();
 
