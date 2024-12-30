@@ -7,6 +7,27 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const ComparisonTable = ({ data, selectedTeams }) => {
   // Dynamisch die Services (Package-Namen) aus den Daten extrahieren
+  const removeDuplicateGames = (data) => {
+    const seenGames = new Set();
+  
+    return data.map((packages) =>
+      packages.map((pkg) => {
+        const uniqueGames = pkg.coveredGames.filter((game) => {
+          const gameIdentifier = `${game.teamA}-${game.teamB}-${game.tournamentName}`;
+          if (seenGames.has(gameIdentifier)) {
+            return false;
+          }
+          seenGames.add(gameIdentifier);
+          return true;
+        });
+  
+        return {
+          ...pkg,
+          coveredGames: uniqueGames,
+        };
+      })
+    );
+  };
   const getPackageNames = (data) => {
     const packageNames = new Set();
 
@@ -44,11 +65,14 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     return prices;
   };
 
-  const services = getPackageNames(data);
-  const prices = getPrices(data);
+  const filteredData = removeDuplicateGames(data);
+  const services = getPackageNames(filteredData);
+  const prices = getPrices(filteredData);
 
   const [openTournament, setOpenTournament] = useState(null);
   const [page, setPage] = useState(0); // für das Seitenmanagement der Spiele
+
+ 
 
   const toggleTournament = (tournamentName) => {
     setOpenTournament((prevTournament) =>
@@ -78,7 +102,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     return tournamentMap;
   };
 
-  const tournamentMap = getTournamentGamesMap(data);
+  const tournamentMap = getTournamentGamesMap(filteredData);
 
   console.log(tournamentMap);
 
@@ -289,7 +313,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                   <td key={index} className="price-cell">
                     {prices[service]
                       ? `${prices[service].toFixed(2)} € (monatlich)`
-                      : "N/A"}
+                      : "0.00 €"}
                   </td>
                 ))}
               </tr>
