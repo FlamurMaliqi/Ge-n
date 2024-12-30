@@ -1,24 +1,20 @@
 # Verwende ein Node.js-Image als Basis
-FROM node:18-alpine
+FROM node:18
 
-# Arbeitsverzeichnis im Container festlegen
+# Arbeitsverzeichnis im Container setzen
 WORKDIR /app
 
-# Installiere die Abhängigkeiten
-COPY package.json package-lock.json ./
+# package.json und package-lock.json kopieren
+COPY ../package*.json ./
+
+# Abhängigkeiten installieren
 RUN npm install
 
-# Kopiere den gesamten Frontend-Code in den Container
-COPY . .
+# Den restlichen Code kopieren
+COPY .. .
 
-# Baue die React-App
-RUN npm run build
+# Expose Port 3000
+EXPOSE 3000
 
-# Installiere einen HTTP-Server (z.B. serve), um die gebaute App zu hosten
-RUN npm install -g serve
-
-# Stelle den Port ein, auf dem die App läuft
-EXPOSE 5000
-
-# Starte die App mit serve
-CMD ["serve", "-s", "build", "-l", "5000"]
+# Startbefehl: React-Entwicklungsserver
+CMD ["npm", "start"]

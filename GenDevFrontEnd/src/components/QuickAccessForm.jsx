@@ -1,96 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import FormInput from "./FormInput";
 import "../css/quick-access-form.css";
+import {
+    handleInputChange,
+    handleSuggestionClick,
+    handleRemoveTeam,
+    handleSubmit,
+    fetchSuggestions, // Importiere fetchSuggestions
+} from '../helpers/teamHelpers';
 
 function QuickAccessForm() {
     const [teamValue, setTeamValue] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [filteredSuggestions, setFilteredSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [selectedTeams, setSelectedTeams] = useState([]); // State for selected teams
-    const navigate = useNavigate(); // Hook to navigate to other pages
+    const [selectedTeams, setSelectedTeams] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchSuggestions = async () => {
-            try {
-                const response = await fetch("http://localhost:8080/api/streaming/teams");
-                if (response.ok) {
-                    const data = await response.json();
-                    setSuggestions(data);
-                } else {
-                    console.error("Error fetching suggestions");
-                }
-            } catch (error) {
-                console.error("Error fetching suggestions:", error);
-            }
-        };
-
-        fetchSuggestions();
+        fetchSuggestions(setSuggestions); // Verwende die ausgelagerte Funktion
     }, []);
-
-    const handleInputChange = (e) => {
-        const input = e.target.value;
-        setTeamValue(input);
-
-        if (input.length >= 3) {
-            setShowSuggestions(true);
-            const filtered = suggestions.filter((team) =>
-                team.toLowerCase().includes(input.toLowerCase())
-            );
-            setFilteredSuggestions(filtered);
-        } else {
-            setShowSuggestions(false);
-            setFilteredSuggestions([]);
-        }
-    };
-
-    const handleSuggestionClick = (teamName) => {
-        if (!selectedTeams.includes(teamName)) {
-            setSelectedTeams([...selectedTeams, teamName]); // Add team to selected teams
-        }
-        setTeamValue(""); // Clear the input field after selection
-        setShowSuggestions(false); // Hide suggestions
-    };
-
-    const handleRemoveTeam = (teamName) => {
-        setSelectedTeams(selectedTeams.filter((team) => team !== teamName)); // Remove team from selected list
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Check if any teams are selected
-        if (selectedTeams.length === 0) {
-            alert("Please select at least one team");
-            return;
-        }
-
-        try {
-            const response = await fetch("http://localhost:8080/api/streaming/packages", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(selectedTeams),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Response data:', data); 
-
-                navigate("/packages", { state: { selectedTeams, data } });
-            } else {
-                console.error("Error fetching packages");
-            }
-        } catch (error) {
-            console.error("Error sending request:", error);
-        }
-    };
 
     return (
         <div id="quick-access">
-            <form id="quick-access-form" onSubmit={handleSubmit}>
+            <form id="quick-access-form" onSubmit={(e) => { 
+                e.preventDefault(); 
+                handleSubmit(selectedTeams, navigate); 
+            }}>
                 <FormInput
                     label="Team"
                     type="text"
@@ -98,11 +35,27 @@ function QuickAccessForm() {
                     id="teamValue"
                     placeholder="Search for a team"
                     value={teamValue}
-                    onChange={handleInputChange}
+                    onChange={(e) =>
+                        handleInputChange(
+                            e.target.value,
+                            suggestions,
+                            setTeamValue,
+                            setShowSuggestions,
+                            setFilteredSuggestions
+                        )
+                    }
                     required={false}
                     suggestions={filteredSuggestions}
                     showSuggestions={showSuggestions}
-                    onSuggestionClick={handleSuggestionClick}
+                    onSuggestionClick={(teamName) =>
+                        handleSuggestionClick(
+                            teamName,
+                            selectedTeams,
+                            setSelectedTeams,
+                            setTeamValue,
+                            setShowSuggestions
+                        )
+                    }
                 />
                 <input type="submit" value="Search Package" className="submit button" />
                 
@@ -112,7 +65,9 @@ function QuickAccessForm() {
                             <span>{team}</span>
                             <button
                                 type="button"
-                                onClick={() => handleRemoveTeam(team)}
+                                onClick={() =>
+                                    handleRemoveTeam(team, selectedTeams, setSelectedTeams)
+                                }
                                 className="remove-team-button"
                             >
                                 &times;
