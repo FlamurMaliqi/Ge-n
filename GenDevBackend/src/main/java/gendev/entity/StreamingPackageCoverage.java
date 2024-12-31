@@ -17,8 +17,6 @@ public class StreamingPackageCoverage {
     private Integer monthlyPriceYearlySubscriptionInCents;
     private List<Long> coveredGames;
 
-    // Getter und Setter
-
     public String getPackageName() {
         return packageName;
     }
@@ -51,7 +49,6 @@ public class StreamingPackageCoverage {
         this.coveredGames = coveredGames;
     }
 
-    // Optionale Methode zur Debug-Ausgabe
     @Override
     public String toString() {
         return "StreamingPackageCoverage{" +

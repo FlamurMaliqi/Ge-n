@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Warte 30 Sekunden auf den Backend-Start..."
-sleep 30
+sleep 20
 
 cd GenDevFrontEnd
 

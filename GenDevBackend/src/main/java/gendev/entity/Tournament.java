@@ -20,8 +20,6 @@ public class Tournament {
     @ElementCollection
     private List<GameInfo> coveredGames;
 
-
-    // Getter und Setter
     public String getTournamentName() {
         return tournamentName;
     }

@@ -6,6 +6,7 @@ import lightGreenCropInCircle from "../images/lightGreenCropInCircle.png";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const ComparisonTable = ({ data, selectedTeams }) => {
+  // Function to remove duplicate games based on team names and tournament
   const removeDuplicateGames = (data) => {
     const seenGames = new Set();
   
@@ -22,16 +23,16 @@ const ComparisonTable = ({ data, selectedTeams }) => {
               return true;
             });
   
-            // Package nur behalten, wenn es noch Spiele enthält
             return uniqueGames.length > 0
               ? { ...pkg, coveredGames: uniqueGames }
-              : null; // Wenn kein Spiel mehr übrig ist, wird das Package entfernt
+              : null; 
           })
-          .filter((pkg) => pkg !== null) // Entfernt Packages, die keine Spiele mehr enthalten
+          .filter((pkg) => pkg !== null) 
       )
-      .filter((packages) => packages.length > 0); // Entfernt leere Package-Arrays
+      .filter((packages) => packages.length > 0); 
   };
-   
+
+  // Function to extract all unique package names
   const getPackageNames = (data) => {
     const packageNames = new Set();
 
@@ -43,18 +44,20 @@ const ComparisonTable = ({ data, selectedTeams }) => {
       });
     });
 
-    return Array.from(packageNames); // Rückgabe als Array
+    return Array.from(packageNames); 
   };
 
+  // Function to calculate monthly price for a package
   const calculateMonthlyPrice = (pkg) => {
     if (pkg.monthlyPriceCents !== null) {
-      return pkg.monthlyPriceCents / 100; // Preis in Euro umrechnen
+      return pkg.monthlyPriceCents / 100; 
     } else if (pkg.monthlyPriceYearlySubscriptionInCents !== null) {
-      return pkg.monthlyPriceYearlySubscriptionInCents / 12 / 100; // Jahrespreis auf Monat herunterrechnen
+      return pkg.monthlyPriceYearlySubscriptionInCents / 12 / 100; 
     }
-    return "N/A"; // Wenn keine Preise verfügbar sind
+    return "0.00"; 
   };
 
+  // Function to get prices for each package
   const getPrices = (data) => {
     const prices = {};
 
@@ -69,21 +72,23 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     return prices;
   };
 
+  // Remove duplicate games and get filtered data
   const filteredData = removeDuplicateGames(data);
   const services = getPackageNames(filteredData);
   const prices = getPrices(filteredData);
 
+  // State to manage which tournament is open and pagination
   const [openTournament, setOpenTournament] = useState(null);
-  const [page, setPage] = useState(0); // für das Seitenmanagement der Spiele
+  const [page, setPage] = useState(0); 
 
- 
-
+  // Toggle the visibility of a tournament's games
   const toggleTournament = (tournamentName) => {
     setOpenTournament((prevTournament) =>
       prevTournament === tournamentName ? null : tournamentName
     );
   };
 
+  // Function to create a map of tournament names and their games
   const getTournamentGamesMap = (data) => {
     const tournamentMap = new Map();
 
@@ -108,8 +113,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
 
   const tournamentMap = getTournamentGamesMap(filteredData);
 
-  console.log(tournamentMap);
-
+  // Function to get the icon based on the status (highlight, live)
   const getIconForStatus = (games, statusType) => {
     const allTrue = games.every((game) => game?.[statusType] === true);
     const allFalse = games.every((game) => game?.[statusType] === false);
@@ -125,6 +129,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     return blackCross;
   };
 
+  // Calculate the total monthly price for all packages
   const totalMonthlyPrice = Object.values(prices).reduce((total, price) => {
     if (typeof price === "number") {
       return total + price;
@@ -132,7 +137,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
     return total;
   }, 0);
 
-  // Funktion zum Berechnen der angezeigten Spiele basierend auf der Seite
+  // Function to slice games based on the current page for pagination
   const getGamesToDisplay = (games) => {
     const startIndex = page * 5;
     const endIndex = startIndex + 5;
@@ -148,6 +153,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
             <thead>
               <tr>
                 <th>Turniere</th>
+                {/* Render package names dynamically as table headers */}
                 {services.map((service, index) => (
                   <th key={index}>
                     {service}
@@ -160,6 +166,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
               </tr>
             </thead>
             <tbody>
+              {/* Render each tournament */}
               {Array.from(tournamentMap.keys()).map(
                 (tournamentName, tournamentIndex) => (
                   <React.Fragment key={tournamentIndex}>
@@ -177,6 +184,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                           )}
                         </span>
                       </td>
+                      {/* Render status icons for each service */}
                       {services.map((service) => (
                         <td key={service}>
                           <div className="status-icons">
@@ -217,6 +225,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                         </td>
                       ))}
                     </tr>
+                    {/* Display games when the tournament is open */}
                     {openTournament === tournamentName &&
                       services.map(
                         (service) =>
@@ -273,6 +282,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                                   ))}
                                 </tr>
                               ))}
+                              {/* Pagination buttons */}
                               {tournamentMap
                                 .get(tournamentName)
                                 ?.hasOwnProperty(service) &&
@@ -294,8 +304,7 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                                           disabled={
                                             tournamentMap.get(tournamentName)[
                                               service
-                                            ]?.length <=
-                                            (page + 1) * 5
+                                            ]?.length <= page * 5 + 5
                                           }
                                         >
                                           <FaChevronDown />
@@ -310,25 +319,15 @@ const ComparisonTable = ({ data, selectedTeams }) => {
                   </React.Fragment>
                 )
               )}
-
-              <tr>
-                <td>Preis (monatlich)</td>
-                {services.map((service, index) => (
-                  <td key={index} className="price-cell">
-                    {prices[service]
-                      ? `${prices[service].toFixed(2)} € (monatlich)`
-                      : "0.00 €"}
-                  </td>
-                ))}
-              </tr>
             </tbody>
           </table>
         </div>
-
+        {/* Display the total price */}
         <div className="total-price">
-          <strong>
-            Gesamter Preis: {totalMonthlyPrice.toFixed(2)} € (monatlich)
-          </strong>
+          <span className="total-price-label">Gesamtpreis:</span>
+          <span className="total-price-value">
+            €{totalMonthlyPrice.toFixed(2)}
+          </span>
         </div>
       </div>
     </div>

@@ -30,25 +30,29 @@ public class StreamingService {
     @Inject
     StreamingPackageCoverageRepository repository;
 
-    // Methode zum Abrufen aller Teamnamen
+    // Method to fetch all team names
     public List<String> getAllTeamNames() {
         return gameRepository.findAllTeamNames();
     }
 
+    // Method to get the information about streaming packages and format it into DTOs
     public List<List<StreamingPackageCoverageDTO>> getPackageInformation(List<String> teams) {
+        // Execute the query to get package information and store the results
         List<List<StreamingPackageCoverage>> combinations =  executeAndStoreQuery(teams);
 
         List<List<StreamingPackageCoverageDTO>> result = new ArrayList<>();
 
+        // Loop through each combination of packages
         for (List<StreamingPackageCoverage> combination : combinations) {
             List<StreamingPackageCoverageDTO> dtoList = new ArrayList<>();
 
+            // Convert each package into a DTO (Data Transfer Object)
             for (StreamingPackageCoverage packageCoverage : combination) {
-                // Mapping von Spiel-IDs zu Turnieren (Beispiel: Daten anpassen)
+                // Group the games of the package by tournaments
                 Map<String, List<GameInfo>> tournamentsMap = groupGamesByTournament(packageCoverage.getCoveredGames(), packageCoverage.getPackageName());
 
-                // Erstelle eine Liste von Turnieren
                 List<Tournament> tournaments = new ArrayList<>();
+                // For each tournament, create a Tournament object and set its details
                 for (Map.Entry<String, List<GameInfo>> entry : tournamentsMap.entrySet()) {
                     Tournament tournament = new Tournament();
                     tournament.setTournamentName(entry.getKey());
@@ -56,12 +60,11 @@ public class StreamingService {
                     tournaments.add(tournament);
                 }
 
-                // Erstelle StreamingPackageCoverageDTO
+                // Create a DTO for the package
                 StreamingPackageCoverageDTO dto = new StreamingPackageCoverageDTO();
                 dto.setPackageName(packageCoverage.getPackageName());
                 dto.setMonthlyPriceCents(packageCoverage.getMonthlyPriceCents());
-                dto.setMonthlyPriceYearlySubscriptionInCents(
-                        packageCoverage.getMonthlyPriceYearlySubscriptionInCents());
+                dto.setMonthlyPriceYearlySubscriptionInCents(packageCoverage.getMonthlyPriceYearlySubscriptionInCents());
                 dto.setCoveredGames(tournaments);
 
                 dtoList.add(dto);
@@ -73,9 +76,11 @@ public class StreamingService {
         return result;
     }
 
+    // Method to group games of a package by tournament name
     private Map<String, List<GameInfo>> groupGamesByTournament(List<Long> gameIds, String packageName) {
         Map<String, List<GameInfo>> tournamentMap = new HashMap<>();
 
+        // For each game, get its details and group them by tournament
         for (Long gameId : gameIds) {
             List<Object> gameDetails = getGameDetails(gameId, packageName); 
             String tournamentName = (String) gameDetails.get(0);
@@ -86,13 +91,14 @@ public class StreamingService {
 
             GameInfo gameInfo = new GameInfo(teamHome, teamAway, isLive, hasHighlights);
 
+            // Add the game to the respective tournament
             tournamentMap.computeIfAbsent(tournamentName, k -> new ArrayList<>()).add(gameInfo);
         }
 
         return tournamentMap;
     }
 
-    
+    // Method to retrieve details of a specific game
     private List<Object> getGameDetails(Long gameId, String packageName) {
         String sql = """
                 WITH package_id AS (
@@ -128,22 +134,23 @@ public class StreamingService {
                 """;
     
         try {
+            @SuppressWarnings("unchecked")
             List<Object[]> queryResult = entityManager.createNativeQuery(sql)
                     .setParameter(1, gameId)
                     .setParameter(2, packageName)
                     .getResultList();
     
+            // If the game details are found, return them
             if (!queryResult.isEmpty()) {
                 Object[] resultRow = queryResult.get(0);
     
-                // Map values and handle nulls
+                // Map the result row to values and handle nulls
                 String tournamentName = resultRow[0] != null ? (String) resultRow[0] : "Unknown Tournament";
                 String teamHome = resultRow[1] != null ? (String) resultRow[1] : "Unknown Team";
                 String teamAway = resultRow[2] != null ? (String) resultRow[2] : "Unknown Team";
                 Boolean isLive = resultRow[3] != null ? (Boolean) resultRow[3] : false;
                 Boolean hasHighlights = resultRow[4] != null ? (Boolean) resultRow[4] : false;
     
-                // Return values as a list
                 return List.of(tournamentName, teamHome, teamAway, isLive, hasHighlights);
             } else {
                 return List.of("Game not found", "Unknown Team", "Unknown Team", false, false);
@@ -154,9 +161,7 @@ public class StreamingService {
         }
     }
     
-    
-
-    // Methode zur Ausführung und Speicherung der Abfrage
+    // Method to execute and store the query results based on the teams
     public List<List<StreamingPackageCoverage>> executeAndStoreQuery(List<String> teams) {
         String sql = """
                     WITH team_games AS (
@@ -183,12 +188,11 @@ public class StreamingService {
                     ORDER BY pc.streaming_package_id;
                 """;
 
-        // Abfrage ausführen
+        // Execute the query and get the results
         List<Object[]> queryResults = entityManager.createNativeQuery(sql)
                 .setParameter(1, teams.toArray(new String[0]))
                 .getResultList();
 
-        // Liste der Paketabdeckungen aufbauen
         List<StreamingPackageCoverage> coverageList = new ArrayList<>();
         for (Object[] row : queryResults) {
             StreamingPackageCoverage coverage = new StreamingPackageCoverage();
@@ -196,42 +200,37 @@ public class StreamingService {
             coverage.setMonthlyPriceCents((Integer) row[2]);
             coverage.setMonthlyPriceYearlySubscriptionInCents((Integer) row[3]);
 
-            // Set anstatt List für covered_games
+            // Store the covered games as a Set (removing duplicates)
             Set<Long> coveredGames = new HashSet<>(Arrays.asList((Long[]) row[4]));
             coverage.setCoveredGames(new ArrayList<>(coveredGames));
             coverageList.add(coverage);
         }
 
-        // Kombinationen von Paketen finden, die alle Spiele abdecken
+        // Aggregate the required games from the package coverages
         Set<Long> requiredGames = new HashSet<>();
-        // Alle Spiele des Teams sammeln
         for (StreamingPackageCoverage coverage : coverageList) {
             requiredGames.addAll(coverage.getCoveredGames());
         }
 
-        // Kombinationen der Pakete finden, die alle Spiele abdecken
+        // Find all package combinations that cover the required games
         List<List<StreamingPackageCoverage>> combinations = findPackageCombinations(coverageList, requiredGames);
 
-        // Günstigste Kombination finden
-        List<StreamingPackageCoverage> cheapestCombination = findCheapestPackageCombination(coverageList,
-                requiredGames);
-
-        return combinations; // Rückgabe der günstigsten Kombination
+        return combinations; 
     }
 
-    // Methode zur Kombination der Pakete, um alle Spiele abzudecken
+    // Method to find the combinations of packages that cover all required games
     private List<List<StreamingPackageCoverage>> findPackageCombinations(List<StreamingPackageCoverage> packageList,
             Set<Long> requiredGames) {
         List<List<StreamingPackageCoverage>> result = new ArrayList<>();
         List<StreamingPackageCoverage> currentCombination = new ArrayList<>();
         Set<Long> coveredGames = new HashSet<>();
 
-        // Greedy-Algorithmus verwenden, um die minimalen Kombinationen zu finden
+        // Continue until all required games are covered
         while (!coveredGames.containsAll(requiredGames)) {
             StreamingPackageCoverage bestPackage = null;
             int maxCoverage = 0;
 
-            // Wähle das Paket, das die meisten noch nicht abgedeckten Spiele hinzufügt
+            // Find the package with the maximum coverage of uncovered games
             for (StreamingPackageCoverage currentPackage : packageList) {
                 int coverageCount = getCoverageCount(currentPackage, coveredGames);
                 if (coverageCount > maxCoverage) {
@@ -243,59 +242,23 @@ public class StreamingService {
             if (bestPackage == null)
                 break;
 
-            // Füge das beste Paket zur aktuellen Kombination hinzu
+            // Add the best package to the combination
             currentCombination.add(bestPackage);
             coveredGames.addAll(bestPackage.getCoveredGames());
         }
 
-        if (coveredGames.containsAll(requiredGames)) {
-            result.add(new ArrayList<>(currentCombination));
+        // If a valid combination of packages was found, add it to the result
+        if (!currentCombination.isEmpty()) {
+            result.add(currentCombination);
         }
 
         return result;
     }
 
-    // Hilfsmethode zur Berechnung der Anzahl der noch nicht abgedeckten Spiele
+    // Method to calculate the number of uncovered games covered by a package
     private int getCoverageCount(StreamingPackageCoverage currentPackage, Set<Long> coveredGames) {
         Set<Long> uncoveredGames = new HashSet<>(currentPackage.getCoveredGames());
         uncoveredGames.removeAll(coveredGames);
         return uncoveredGames.size();
-    }
-
-    // Methode zur Suche nach der günstigsten Kombination der Pakete
-    private List<StreamingPackageCoverage> findCheapestPackageCombination(List<StreamingPackageCoverage> packageList,
-            Set<Long> requiredGames) {
-        List<List<StreamingPackageCoverage>> allCombinations = findPackageCombinations(packageList, requiredGames);
-
-        // Finde die Kombination mit dem niedrigsten Preis
-        List<StreamingPackageCoverage> cheapestCombination = null;
-        int minPrice = Integer.MAX_VALUE;
-
-        for (List<StreamingPackageCoverage> combination : allCombinations) {
-            int totalPrice = calculateTotalPrice(combination);
-            if (totalPrice < minPrice) {
-                minPrice = totalPrice;
-                cheapestCombination = combination;
-            }
-        }
-
-        return cheapestCombination;
-    }
-
-    // Hilfsmethode zur Berechnung des Gesamtpreises einer Kombination
-    private int calculateTotalPrice(List<StreamingPackageCoverage> combination) {
-        int totalPrice = 0;
-        for (StreamingPackageCoverage coverage : combination) {
-            Integer monthlyPrice = coverage.getMonthlyPriceCents();
-            if (monthlyPrice != null) {
-                totalPrice += monthlyPrice; // Wenn monatlicher Preis vorhanden ist
-            } else {
-                Integer yearlyPrice = coverage.getMonthlyPriceYearlySubscriptionInCents();
-                if (yearlyPrice != null) {
-                    totalPrice += yearlyPrice / 12; // Jahrespreis in monatlichen Preis umrechnen
-                }
-            }
-        }
-        return totalPrice;
     }
 }

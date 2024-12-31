@@ -32,7 +32,6 @@ public class GameInfoRepository {
         }
     }
 
-    // Zusätzliche Methoden nach Bedarf, z. B. alle Spiele für ein bestimmtes Turnier
     public List<GameInfo> findAll() {
         return entityManager.createQuery("SELECT g FROM GameInfo g", GameInfo.class).getResultList();
     }

@@ -32,7 +32,6 @@ public class TournamentRepository {
         }
     }
 
-    // Zusätzliche Methoden nach Bedarf, z. B. alle Turniere abrufen
     public List<Tournament> findAll() {
         return entityManager.createQuery("SELECT t FROM Tournament t", Tournament.class).getResultList();
     }
