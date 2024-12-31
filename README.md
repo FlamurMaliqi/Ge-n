@@ -9,32 +9,38 @@ The project is structured as follows:
 Backend (Quarkus):
 
 1. Get Available Teams
-URL: /teams
-Method: GET
-Description: Liefert eine Liste aller verfügbaren Teams.
+- URL: /teams
+- Method: GET
+- Description: Liefert eine Liste aller verfügbaren Teams.
+
+
 Response:
 
-
+```
 [
   "Deutschland",
   "Schottland"
 ]
+```
+
+
 2. Generate Streaming Package Coverage
-URL: /packages
-Method: POST
-Description: Gibt die Streaming-Pakete und deren Abdeckung für die angegebenen Teams zurück. Wenn das Team "Alle Spiele" in der Anfrage enthalten ist, wird die zwischengespeicherte Abdeckungsliste (cachedCoverageList) zurückgegeben.
+- URL: /packages
+- Method: POST
+- Description: Gibt die Streaming-Pakete und deren Abdeckung für die angegebenen Teams zurück("Alle Spiele" is also a option").
 Request Body:
 
-json
-Code kopieren
+```
 [
   "Deutschland",
   "Schottland"
 ]
+
+```
+
 Response:
 
-json
-Code kopieren
+```
 [
   [
     {
@@ -114,12 +120,17 @@ Code kopieren
     }
   ]
 ]
+```
 
 Frontend (React):
 
 - Fetches data from the backend via API calls.
 
-- Provides a clean, user-friendly interface for interacting with the application.
+- Uses the GET endpoint to retrieve all available teams (including the option "Alle Spiele").
+
+- Sends a selected list of teams to the POST endpoint to determine the best package combinations.
+
+- Displays the resulting package combinations on a new page in a tabular format.
 
 
 
