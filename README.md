@@ -8,9 +8,112 @@ The project is structured as follows:
 
 Backend (Quarkus):
 
-- Provides RESTful APIs for data processing and business logic.
+1. Get Available Teams
+URL: /teams
+Method: GET
+Description: Liefert eine Liste aller verfügbaren Teams.
+Response:
 
-- Implements efficient algorithms to compute optimal package combinations.
+
+[
+  "Deutschland",
+  "Schottland"
+]
+2. Generate Streaming Package Coverage
+URL: /packages
+Method: POST
+Description: Gibt die Streaming-Pakete und deren Abdeckung für die angegebenen Teams zurück. Wenn das Team "Alle Spiele" in der Anfrage enthalten ist, wird die zwischengespeicherte Abdeckungsliste (cachedCoverageList) zurückgegeben.
+Request Body:
+
+json
+Code kopieren
+[
+  "Deutschland",
+  "Schottland"
+]
+Response:
+
+json
+Code kopieren
+[
+  [
+    {
+      "packageName": "MagentaTV - MegaSport",
+      "monthlyPriceCents": null,
+      "monthlyPriceYearlySubscriptionInCents": 6000,
+      "coveredGames": [
+        {
+          "tournamentName": "UEFA Champions League 24/25",
+          "gameInfos": [
+            {
+              "teamA": "Aston Villa",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            },
+            {
+              "teamA": "FC Barcelona",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "tournamentName": "Bundesliga 23/24",
+          "gameInfos": [
+            {
+              "teamA": "Bayern München",
+              "teamB": "RB Leipzig",
+              "live": true,
+              "highlight": true
+            },
+            {
+              "teamA": "SC Freiburg",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "tournamentName": "Bundesliga 24/25",
+          "gameInfos": [
+            {
+              "teamA": "FC St. Pauli",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            },
+            {
+              "teamA": "Bayern München",
+              "teamB": "VfL Bochum",
+              "live": true,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "tournamentName": "DFB Pokal 24/25",
+          "gameInfos": [
+            {
+              "teamA": "FSV Mainz",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            },
+            {
+              "teamA": "SSV Ulm 1846",
+              "teamB": "Bayern München",
+              "live": true,
+              "highlight": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+]
 
 Frontend (React):
 
