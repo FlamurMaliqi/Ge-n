@@ -1,5 +1,8 @@
 # CHECK24 GenDev Streaming Package Comparison Challenge
 
+## Overview
+
+This project is a solution for the CHECK24 Best Combination Challenge from Flamur Maliqi.
 
 
 ##  Architecture
