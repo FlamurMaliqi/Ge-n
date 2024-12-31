@@ -1,5 +1,25 @@
 # CHECK24 GenDev Streaming Package Comparison Challenge
 
+
+
+##  Architecture
+
+The project is structured as follows:
+
+Backend (Quarkus):
+
+- Provides RESTful APIs for data processing and business logic.
+
+- Implements efficient algorithms to compute optimal package combinations.
+
+Frontend (React):
+
+- Fetches data from the backend via API calls.
+
+- Provides a clean, user-friendly interface for interacting with the application.
+
+
+
 ## How to Run the Project
 
 Option 1: Watch the Demo Video
